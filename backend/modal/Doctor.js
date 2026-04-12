@@ -32,6 +32,8 @@ const doctorSchema = new mongoose.Schema({
     googleId: {type:String,unique:true,sparse:true},
     profileImage: {type:String, default:''},
 
+    licenseNumber: {type:String, required:true, unique:true},
+
 
     specialization : {
         type: String,
@@ -61,6 +63,10 @@ const doctorSchema = new mongoose.Schema({
 
     isVerified: {type:Boolean, default:false},
         isActive: {type:Boolean, default:true},
+
+    rejectionReason: {type:String, default:null},
+    verifiedAt: {type:Date, default:null},
+    verifiedBy: {type:mongoose.Schema.Types.ObjectId, ref:'Admin', default:null},
 
 })
 

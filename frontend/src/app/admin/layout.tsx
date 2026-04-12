@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Loader,
   LogOut,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -64,6 +65,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/dashboard",
       icon: LayoutDashboard,
       current: pathName === "/admin/dashboard",
+    },
+    {
+      name: "Verifications",
+      href: "/admin/verifications",
+      icon: ShieldCheck,
+      current: pathName === "/admin/verifications",
     },
     {
       name: "Users",

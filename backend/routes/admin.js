@@ -77,6 +77,7 @@ router.get("/dashboard", authenticate, requireAdmin, async (req, res) => {
       completedAppointments,
       pendingAppointments,
       totalRevenue,
+      pendingDoctors,
     ] = await Promise.all([
       Patient.countDocuments(),
       Doctor.countDocuments(),
@@ -87,6 +88,7 @@ router.get("/dashboard", authenticate, requireAdmin, async (req, res) => {
         { $match: { status: "completed" } },
         { $group: { _id: null, total: { $sum: "$totalAmount" } } },
       ]),
+      Doctor.countDocuments({ isVerified: false }),
     ]);
 
     const sixMonthAgo = new Date();
@@ -153,6 +155,7 @@ router.get("/dashboard", authenticate, requireAdmin, async (req, res) => {
           totalAppointments,
           completedAppointments,
           pendingAppointments,
+          pendingDoctors,
           totalRevenue: totalRevenue[0]?.total || 0,
         },
         monthlyRevenue,
@@ -340,7 +343,131 @@ router.get(
   }
 );
 
+router.get(
+  "/doctors/pending",
+  authenticate,
+  requireAdmin,
+  requirePermission("doctorManagement"),
+  async (req, res) => {
+    try {
+      const { page = 1, limit = 10, search } = req.query;
+      const skip = (page - 1) * limit;
 
+      let query = { isVerified: false };
+
+      if (search) {
+        query = {
+          ...query,
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { licenseNumber: { $regex: search, $options: "i" } },
+          ],
+        };
+      }
+
+      const [doctors, total] = await Promise.all([
+        Doctor.find(query)
+          .select("-password -googleId")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(parseInt(limit)),
+        Doctor.countDocuments(query),
+      ]);
+
+      res.ok(doctors, "Pending doctors retrieved", {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+      });
+    } catch (error) {
+      res.serverError("Failed to fetch pending doctors", [error.message]);
+    }
+  }
+);
+
+router.get(
+  "/doctors",
+  authenticate,
+  requireAdmin,
+  requirePermission("doctorManagement"),
+  async (req, res) => {
+    try {
+      const { page = 1, limit = 10, search, isVerified } = req.query;
+      const skip = (page - 1) * limit;
+
+      let query = {};
+
+      if (isVerified !== undefined) {
+        query.isVerified = isVerified === 'true';
+      }
+
+      if (search) {
+        query = {
+          ...query,
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { licenseNumber: { $regex: search, $options: "i" } },
+            { specialization: { $regex: search, $options: "i" } },
+          ],
+        };
+      }
+
+      const [doctors, total] = await Promise.all([
+        Doctor.find(query)
+          .select("-password -googleId")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(parseInt(limit)),
+        Doctor.countDocuments(query),
+      ]);
+
+      res.ok(doctors, "Doctors retrieved", {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+      });
+    } catch (error) {
+      res.serverError("Failed to fetch doctors", [error.message]);
+    }
+  }
+);
+
+router.put(
+  "/doctors/:doctorId/verify",
+  authenticate,
+  requireAdmin,
+  requirePermission("doctorManagement"),
+  async (req, res) => {
+    try {
+      const { doctorId } = req.params;
+      const { isVerified, rejectionReason } = req.body;
+
+      const doctor = await Doctor.findById(doctorId);
+      if (!doctor) {
+        return res.notFound("Doctor not found");
+      }
+
+      const updated = await Doctor.findByIdAndUpdate(
+        doctorId,
+        { 
+          isVerified,
+          rejectionReason: isVerified ? undefined : (rejectionReason || "Verification rejected by admin"),
+          verifiedAt: isVerified ? new Date() : undefined,
+          verifiedBy: isVerified ? req.user._id : undefined
+        },
+        { new: true }
+      ).select("-password -googleId");
+
+      res.ok(updated, isVerified 
+        ? "Doctor verified successfully" 
+        : "Doctor verification rejected");
+    } catch (error) {
+      res.serverError("Failed to verify doctor", [error.message]);
+    }
+  }
+);
 
 router.put(
   '/payments/:appointmentId/payout',

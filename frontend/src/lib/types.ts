@@ -62,6 +62,7 @@ export interface User {
   qualification?: string;
   experience?: number;
   fees?: number;
+  licenseNumber?: string;
   hospitalInfo?: {
     name?: string;
     address?: string;
@@ -95,6 +96,7 @@ export interface Doctor {
   _id: string;
   name: string;
   email: string;
+  licenseNumber: string;
   specialization: string;
   category: string[];
   qualification: string;
@@ -118,6 +120,9 @@ export interface Doctor {
   slotDurationMinutes: number;
   profileImage: string;
   isVerified: boolean;
+  rejectionReason?: string;
+  verifiedAt?: Date;
+  verifiedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -142,6 +147,7 @@ export interface DashboardStats {
   totalAppointments: number;
   completedAppointments: number;
   pendingAppointments: number;
+  pendingDoctors: number;
   totalRevenue: number;
 }
 

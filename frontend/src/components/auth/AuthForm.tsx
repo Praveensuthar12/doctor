@@ -24,9 +24,11 @@ interface AuthFormProps {
     name: '',
     email: '',
     password: '',
+    licenseNumber: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
   
   const { 
     registerPatient, 
@@ -53,15 +55,20 @@ interface AuthFormProps {
             name: formData.name,
             email: formData.email,
             password: formData.password,
+            licenseNumber: formData.licenseNumber,
           });
+          setVerificationMessage('Registration successful! Please sign in after admin verifies your account.');
+          setTimeout(() => {
+            router.push(`/login/doctor`);
+          }, 2000);
         } else {
           await registerPatient({
             name: formData.name,
             email: formData.email,
             password: formData.password,
           });
+          router.push(`/onboarding/${userRole}`);
         }
-        router.push(`/onboarding/${userRole}`);
       } else {
         if (userRole === 'doctor') {
           await loginDoctor(formData.email, formData.password);
@@ -71,9 +78,13 @@ interface AuthFormProps {
           router.push('/patient/dashboard');
         }
       }
-    } catch (err) {
-        console.log(err)
-      console.error(`${type} failed:`, err);
+    } catch (err: any) {
+      const errorMsg = err?.message || err?.response?.data?.message || 'An error occurred';
+      if (errorMsg.includes('not verified') || errorMsg.includes('verification')) {
+        setError('Your account is not verified by admin. Please wait for verification.');
+      } else {
+        setError(errorMsg);
+      }
     }
   };
 
@@ -101,6 +112,12 @@ interface AuthFormProps {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
               {error}
+            </div>
+          )}
+
+          {verificationMessage && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-700 text-sm">
+              {verificationMessage}
             </div>
           )}
 
@@ -132,6 +149,22 @@ interface AuthFormProps {
                 required
               />
             </div>
+
+            {/* License Number for Doctors (only during signup) */}
+            {userRole === 'doctor' && isSignup && (
+              <div className="space-y-2">
+                <Label htmlFor="licenseNumber">Medical License Number</Label>
+                <Input
+                  id="licenseNumber"
+                  type="text"
+                  value={formData.licenseNumber}
+                  onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-600 focus-visible:ring-0"
+                  placeholder="e.g., MCI-123456"
+                  required
+                />
+              </div>
+            )}
 
             {/* Password */}
             <div className="space-y-2">

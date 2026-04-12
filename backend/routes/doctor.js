@@ -121,11 +121,11 @@ router.put(
     try {
       const updated = { ...req.body };
       delete updated.password;
-      updated.isVerified = true; //Mark profile as verified on update
+      delete updated.isVerified;
       const doc = await Doctor.findByIdAndUpdate(req.user._id, updated, {
         new: true,
       }).select("-password -googleId");
-      res.ok(doc, "Profile updated");
+      res.ok(doc, "Profile updated. Verification status unchanged.");
     } catch (error) {
       res.serverError("updated failed", [error.message]);
     }

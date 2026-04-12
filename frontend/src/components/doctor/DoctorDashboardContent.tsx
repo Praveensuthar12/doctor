@@ -7,6 +7,7 @@ import { useDoctorStore } from "@/store/doctorStore";
 import { Appointment, useAppointmentStore } from "@/store/appointmentStore";
 import {
   Activity,
+  AlertCircle,
   Calendar,
   ChevronRight,
   Clock,
@@ -14,6 +15,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  ShieldCheck,
   Star,
   TrendingUp,
   Users,
@@ -182,9 +184,33 @@ const DoctorDashboardContent = () => {
   ];
 
   console.log(dashboardData);
+  
+  const isVerified = user?.isVerified || dashboardData?.user?.isVerified;
+
   return (
     <>
       <Header showDashboardNav={true} />
+
+      {!isVerified && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-amber-900">Verification Pending</h3>
+                  <p className="text-sm text-amber-700">
+                    Your account is pending admin verification. You will be visible to patients once approved.
+                  </p>
+                </div>
+              </div>
+              <ShieldCheck className="w-8 h-8 text-amber-400" />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 pt-16">
         <div className="container mx-auto px-4 py-8">

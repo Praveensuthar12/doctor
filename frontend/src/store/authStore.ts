@@ -15,11 +15,11 @@ interface AuthState {
   clearError: () => void;
   logout: () => void;
 
-  //Api Actions
+    //Api Actions
   loginDoctor: (email: string, password: string) => Promise<void>;
   loginPatient: (email: string, password: string) => Promise<void>;
   loginAdmin: (email: string, password: string) => Promise<void>;
-  registerDoctor: (data: any) => Promise<void>;
+  registerDoctor: (data: any) => Promise<{isVerified: boolean}>;
   registerPatient: (data: any) => Promise<void>;
   fetchProfile: () => Promise<User | null>;
   updateProfile: (data: any) => Promise<void>;
@@ -61,7 +61,9 @@ export const userAuthStore = create<AuthState>()(
           email,
           password,
         });
-        get().setUser(response.data.user, response.data.token);
+        const userData = response.data.user;
+        get().setUser(userData, response.data.token);
+        return { user: userData };
       } catch (error: any) {
         set({ error: error.message });
         throw error;
@@ -106,7 +108,14 @@ export const userAuthStore = create<AuthState>()(
       set({ loading: true, error: null });
       try {
         const response = await postWithoutAuth("/auth/doctor/register", data);
-        get().setUser(response.data.user, response.data.token);
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          error: null,
+        });
+        localStorage.removeItem('token');
+        return { isVerified: response.data.user?.isVerified || false };
       } catch (error: any) {
         set({ error: error.message });
         throw error;

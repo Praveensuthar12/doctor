@@ -19,16 +19,21 @@ router.post('/doctor/register',
         body('name').notEmpty(),
         body('email').isEmail(),
         body('password').isLength({min:6}),
+        body('licenseNumber').notEmpty().withMessage('License number is required'),
     ],
     validate,
     async (req,res) => {
         try {
             const exists = await Doctor.findOne({email: req.body.email});
-            if(exists) return res.badRequest("Doctor alredy exists");
+            if(exists) return res.badRequest("Doctor already exists");
+            
+            const licenseExists = await Doctor.findOne({licenseNumber: req.body.licenseNumber});
+            if(licenseExists) return res.badRequest("License number already registered");
+            
             const hashed = await bcrypt.hash(req.body.password,12);
-            const doc = await Doctor.create({...req.body, password:hashed});
+            const doc = await Doctor.create({...req.body, password:hashed, isVerified: false});
             const token = signToken(doc._id, 'doctor');
-            res.created({token, user: {id:doc._id, type:'doctor'}},'Doctor registered')
+            res.created({token, user: {id:doc._id, type:'doctor', isVerified: false}},'Doctor registered. Please wait for admin verification.')
         } catch (error) {
             res.serverError('Registration failed', [error.message])
         }
@@ -46,10 +51,16 @@ router.post('/doctor/register',
         try {
             const doc = await Doctor.findOne({email: req.body.email});
             if(!doc ||  !doc.password) return res.unauthorized("Invalid credentials");
+            
+            if(!doc.isVerified) {
+                return res.forbidden("Your account is not verified by admin. Please wait for verification.");
+            }
+            
             const match = await bcrypt.compare(req.body.password, doc.password);
             if(!match ) return res.unauthorized("Invalid credentials");
+            
             const token = signToken(doc._id, 'doctor');
-            res.created({token, user: {id:doc._id, type:'doctor'}},'Login successful')
+            res.created({token, user: {id:doc._id, type:'doctor', isVerified: doc.isVerified}},'Login successful')
         } catch (error) {
             res.serverError('Login failed', [error.message])
         }

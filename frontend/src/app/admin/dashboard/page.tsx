@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { DashboardStats, MonthlyRevenue, ReportData } from "@/lib/types";
 import { getWithAuth } from "@/service/httpService";
-import { Calendar, UserCheck, UserCog, Users } from "lucide-react";
+import { Calendar, ShieldCheck, UserCheck, UserCog, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
@@ -126,6 +126,31 @@ const page = () => {
               {stats?.totalDoctors || 0}
             </div>
             <p className="text-xs text-muted-foreground">Registered doctors</p>
+          </CardContent>
+        </Card>
+
+        <Card className={stats?.pendingDoctors > 0 ? "border-amber-400" : ""}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Verifications</CardTitle>
+            <ShieldCheck className={`h-4 w-4 ${stats?.pendingDoctors > 0 ? "text-amber-500" : "text-muted-foreground"}`} />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${stats?.pendingDoctors > 0 ? "text-amber-600" : ""}`}>
+              {stats?.pendingDoctors || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {stats?.pendingDoctors > 0 ? (
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-amber-600" 
+                  onClick={() => router.push("/admin/verifications")}
+                >
+                  Review now
+                </Button>
+              ) : (
+                "No pending verifications"
+              )}
+            </p>
           </CardContent>
         </Card>
 
@@ -268,6 +293,15 @@ const page = () => {
             <Button
               className="w-full justify-start"
               variant="outline"
+              onClick={() => router.push("/admin/verifications")}
+            >
+              <ShieldCheck className="h-4 w-4 mr-2" />
+              Verify Doctors
+            </Button>
+
+            <Button
+              className="w-full justify-start"
+              variant="outline"
               onClick={() => router.push("/admin/users")}
             >
               <UserCog />
@@ -277,7 +311,7 @@ const page = () => {
             <Button
               className="w-full justify-start"
               variant="outline"
-              onClick={() => router.push("/admin/paymets")}
+              onClick={() => router.push("/admin/payments")}
             >
               <UserCog className="h-4 w-4 mr-2" />
               Process Payments
