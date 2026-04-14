@@ -57,7 +57,7 @@ const DoctorListPage = () => {
   };
 
   const activeFilterCount = Object.values(filters).filter(
-    (value) => value && value !== "experience" && value !== "desc"
+    (value) => value && value !== "experience" && value !== "desc",
   ).length;
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -334,41 +334,49 @@ const DoctorListPage = () => {
 
                   <div className="space-y-2 mb-4 text-center">
                     <div className="flex items-center justify-center text-gray-600">
-                      <MapPin className="w-4 h-4 mr-1"/>
-                      <span className="text-sm">{doctor.hospitalInfo.city}</span>
+                      <MapPin className="w-4 h-4 mr-1" />
+                      <span className="text-sm">
+                        {doctor?.hospitalInfo?.city}
+                      </span>
                     </div>
 
-                           <div className="flex justify-center items-center gap-2 text-center">
-                     <p className="text-gray-600 text-md font-semibold">
-                      Consultation Fee:
-                     </p>
-                     <p className="font-bold text-green-600 text-lg">₹{doctor.fees}</p>
+                    <div className="flex justify-center items-center gap-2 text-center">
+                      <p className="text-gray-600 text-md font-semibold">
+                        Consultation Fee:
+                      </p>
+                      <p className="font-bold text-green-600 text-lg">
+                        ₹{doctor.fees}
+                      </p>
+                    </div>
                   </div>
-                  </div>
-
-           
 
                   <div className="mt-auto">
-                    <Link href={`/patient/booking/${doctor._id}`} className="block">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg ply-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all">
+                    <Link
+                      href={`/patient/booking/${doctor._id}`}
+                      className="block"
+                    >
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg ply-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all">
                         Book Appointment
-                    </Button>
+                      </Button>
                     </Link>
-
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
-           <Card className="p-12 text-center">
+          <Card className="p-12 text-center">
             <div className="text-gray-400 mb-4">
-              <Search className="w-16 h-16 mx-auto"/>
+              <Search className="w-16 h-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No doctors found</h3>
-            <p className="text-gray-500 mb-4">Try adjusting your filters or search criteria</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              No doctors found
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Try adjusting your filters or search criteria
+            </p>
             <Button onClick={clearFilters}>Clear Filters</Button>
-           </Card>
+          </Card>
         )}
       </div>
     </div>

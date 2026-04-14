@@ -72,7 +72,7 @@ interface AuthFormProps {
       } else {
         if (userRole === 'doctor') {
           await loginDoctor(formData.email, formData.password);
-          router.push('/doctor/dashboard');
+          router.push('/onboarding/doctor');
         } else {
           await loginPatient(formData.email, formData.password);
           router.push('/patient/dashboard');
